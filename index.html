@@ -20,26 +20,34 @@
       href="https://fonts.googleapis.com/css2?family=Geist+Pixel&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Lexend:wght@100..900&family=Luckiest+Guy&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
       rel="stylesheet"
     />
-
-
-
   </head>
   <body>
     <header
-      class="header-container flex items-center justify-between bg-white/10 backdrop-blur-lg shadow-xl border-b-2 border-white/20"
+      class="header-container flex justify-between items-center bg-white/10 backdrop-blur-lg shadow-xl border-b-2 border-white/20"
     >
-      <h1 class="title text-blue-100 text-4xl font-bold">Atmos</h1>
+      <h1 class="title text-blue-100 text-3xl font-bold">Atmos</h1>
 
-      <form>
-        <div class="search-box">
+      <!-- for smaller screens i'll have a search icon that expands into search box on click -->
+
+      <div class="search-container" data-search-container>
+        <button class="search-toggle" type="button" aria-label="Open search" aria-expanded="false">
           <i class="fas fa-search"></i>
-          <input type="text" placeholder="Search" id="search-input" class="border-2 border-gray-600 rounded-full active:border-white"/>
-        </div>
-      </form>
+        </button>
+        <input
+          type="text"
+          placeholder="Search"
+          id="search-input"
+          class="search-input border-2 border-gray-600 rounded-full active:border-white"
+        />
+      </div>
+
     </header>
 
     <main class="main-container">
-      <div class="weather-dashbord"></div>
+      <div id="main-grid-container">
+        <div class="stored-region"></div>
+        <div class="weather-dashboard"></div>
+      </div>
     </main>
     <footer></footer>
     <script type="module" src="/src/main.js"></script>
