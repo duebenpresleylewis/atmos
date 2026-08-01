@@ -2,7 +2,7 @@ export function searchAnimation() {
   const searchContainer = document.querySelector("[data-search-container]");
 
   if (searchContainer) {
-    const toggle = searchContainer.querySelector(".search-toggle");
+    const toggle = searchContainer.querySelector(".search-toggle"); // icon
     const input = searchContainer.querySelector(".search-input");
 
     const isDesktop = () => window.matchMedia("(min-width: 768px)").matches;
@@ -10,8 +10,9 @@ export function searchAnimation() {
     const openSearch = () => {
       searchContainer.classList.add("is-open");
       toggle?.setAttribute("aria-expanded", "true");
+      input.style.display="inline-block";
       if (!isDesktop()) {
-        input?.focus();
+        input?.focus();   // on mobile, the input is focused so the keyboard appears immediately
       }
     };
 
@@ -34,24 +35,31 @@ export function searchAnimation() {
       }
     });
 
+    // so that in mobiles clicking on input will not close it rather, clicking outside will
     input?.addEventListener("click", (event) => {
       if (!isDesktop()) {
         event.stopPropagation();
       }
     });
 
+    // When it is already open:
+    // tapping the button closes it again
     document.addEventListener("click", (event) => {
       if (!searchContainer.contains(event.target)) {
         closeSearch();
       }
     });
 
+    // When it is already open:
+    // tapping the button closes it again
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
         closeSearch();
       }
     });
 
+
+    // when resizing if the search was opened we should immediately close it after only a limited space is left
     window.addEventListener("resize", () => {
       if (isDesktop()) {
         searchContainer.classList.add("is-open");
