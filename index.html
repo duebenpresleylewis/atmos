@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Atmos</title>
 
-  <!-- font awesome -->
+    <!-- font awesome -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css"
@@ -51,21 +51,62 @@
     <main class="main-container">
       <div id="main-grid-container">
         <div class="stored-region"></div>
-        <div class="weather-dashboard flex flex-col items-center justify-center gap-4 bg-blue-600">
 
-          <div class="current-weather-info flex flex-col items-center justify-center gap-4 bg-amber-50/10 backdrop-blur-lg shadow-xl border-2 border-white/20 rounded-lg">
+        <div
+          class="weather-dashboard flex flex-col items-center justify-center gap-8 bg-blue-600"
+        >
+          <div
+            class="current-weather-info flex flex-col items-center justify-center gap-4 bg-amber-50/10 backdrop-blur-lg shadow-xl border-2 border-white/20 rounded-lg"
+          >
             <h1 id="requested-city" class="text-3xl">Woodland Park</h1>
             <div class="current-weather-temp text-6xl">59°F</div>
             <div class="current-weather-icon text-3xl">⛅</div>
-            <div class="current-weather-status font-bold text-2xl">Partly Cloudy</div>
-            <div class="current-weather-details text-2xl">Humidity: 65%</div>
+            <div class="current-weather-status font-bold text-2xl">
+              Partly Cloudy
+            </div>
           </div>
 
           <div class="forecast-info">
+            <div
+              class="current-weather-details flex justify-between items-center gap-4 bg-amber-50/10 backdrop-blur-lg shadow-xl border-2 border-white/20 rounded-lg p-4"
+            >
+              <div
+                class="weather-details flex flex-col items-center justify-around gap-2"
+              >
+                <span class="wind text-xs text-black">Wind</span>
+                <span class="humidity-wind">2.4 km/h</span>
+              </div>
 
-            
+              <div
+                class="weather-details flex flex-col items-center justify-around gap-2"
+              >
+                <span class="humidity text-xs text-black">Humidity</span>
+                <span class="humidity-wind">65%</span>
+              </div>
+            </div>
+
+            <div
+              class="complete-weather flex flex-col items-center justify-center gap-4 bg-amber-50/10 backdrop-blur-lg shadow-xl border-2 border-white/20 rounded-lg p-4"
+            >
+              <div class="weather-condition">
+                Cloudy conditions will continue for the next few hours.
+              </div>
+
+              <div class="intervals-weather-grid grid grid-cols-5 gap-4">
+                <!-- number of items are depended upon at what time the user checks the weather, so populate using js -->
+                <div class="time-stamp-card flex flex-col">
+                  <span>Now</span>
+                  <span>🌦️</span>
+                  <span>59°</span>
+                </div>
+                <div class="time-stamp-card flex flex-col">
+                  <span>Now</span>
+                  <span>🌦️</span>
+                  <span>59°</span>
+                </div>
+              </div>
+            </div>
           </div>
-
         </div>
       </div>
     </main>
