@@ -5,7 +5,7 @@ import initWeatherSearch from "./scripts/weatherSearch.js";
 
 searchAnimation();
 
-
+initWeatherSearch();
 
 // functions
 
