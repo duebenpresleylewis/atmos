@@ -1,0 +1,42 @@
+.current-weather-info{
+    padding:1rem;
+    margin-top: 1rem;
+}
+
+
+@media screen and (max-width:768px) {
+    .current-weather-info {
+        padding:1.5rem;
+        margin-top: 1.5rem;
+    }
+    .current-weather-info #requested-city {
+        font-size: 1.15rem;
+
+    }
+
+    .current-weather-info .current-weather-temp {
+        font-size: 2rem;
+    }
+
+    .current-weather-info .current-weather-status {
+        font-size: 1.15rem;
+    }
+    .current-weather-info .current-weather-details {
+        font-size: 1.15rem;
+    }
+
+}
+
+@media screen and (min-width:768px) {
+    .current-weather-info {
+        padding:2rem;
+        margin-top: 2rem;
+    }
+}
+
+@media screen and (min-width:1024px) {
+    .current-weather-info {
+        padding:3rem;
+        margin-top: 3rem;
+    }
+}
