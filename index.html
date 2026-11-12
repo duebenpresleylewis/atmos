@@ -48,10 +48,31 @@
         <div class="stored-region"></div>
 
         <div
-          class="weather-dashboard flex flex-col items-center justify-center gap-8 bg-blue-600"
+          class="weather-dashboard relative isolate flex flex-col items-center justify-center gap-8 overflow-hidden bg-blue-600"
         >
+          <video
+            class="pointer-events-none absolute inset-0 h-full w-full object-cover motion-reduce:hidden"
+            autoplay
+            muted
+            loop
+            playsinline
+            aria-hidden="true"
+            tabindex="-1"
+            poster="/fallback-images/partly-cloudy.jpg"
+          >
+
+          <!--
+           remember to uncomment this later
+            -->
+            <!-- <source src="/videos/drizzle.webm" type="video/webm" /> -->
+          </video>
           <div
-            class="current-weather-info flex flex-col items-center justify-center gap-4 bg-amber-50/10 backdrop-blur-lg shadow-xl border-2 border-white/20 rounded-lg"
+            class="pointer-events-none absolute inset-0 bg-black/30"
+            aria-hidden="true"
+          ></div>
+
+          <div
+            class="current-weather-info relative z-10 flex flex-col items-center justify-center gap-4 bg-amber-50/10 backdrop-blur-lg shadow-xl border-2 border-white/20 rounded-lg"
           >
             <h1 id="requested-city" class="text-3xl">Woodland Park</h1>
             <div class="current-weather-temp text-6xl">59°F</div>
@@ -61,7 +82,7 @@
             </div>
           </div>
 
-          <div class="forecast-info">
+          <div class="forecast-info relative z-10">
             <div
               class="current-weather-details flex justify-between items-center gap-4 bg-amber-50/10 backdrop-blur-lg shadow-xl border-2 border-white/20 rounded-lg p-4"
             >
