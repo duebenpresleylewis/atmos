@@ -6,6 +6,9 @@ export default function initWeatherSearch() {
     return;
   }
 
+  let activeController = null;
+  let latestRequestId = 0;
+
   input.addEventListener("keydown", async (event) => {
     if (event.key !== "Enter") {
       return;
@@ -13,24 +16,41 @@ export default function initWeatherSearch() {
 
     event.preventDefault();
 
+    activeController?.abort();
+    activeController = null;
+    const requestId = ++latestRequestId;
     const city = input.value.trim();
     if (!city) {
       renderError("Please enter a city name.", weatherDashboard);
       return;
     }
 
+    const controller = new AbortController();
+    activeController = controller;
     weatherDashboard.innerHTML = "<p>Loading weather...</p>";
 
     try {
-      const weather = await fetchWeatherData(city);
+      const weather = await fetchWeatherData(city, controller.signal);
+      if (requestId !== latestRequestId) {
+        return;
+      }
+
       renderWeatherData(weather, weatherDashboard);
     } catch (error) {
+      if (error.name === "AbortError" || requestId !== latestRequestId) {
+        return;
+      }
+
       renderError(error.message, weatherDashboard);
+    } finally {
+      if (requestId === latestRequestId) {
+        activeController = null;
+      }
     }
   });
 }
 
-async function fetchWeatherData(city) {
+async function fetchWeatherData(city, signal) {
   const apiKey = import.meta.env.VITE_OPENWEATHER_API_KEY;
 
   if (!apiKey) {
@@ -38,7 +58,7 @@ async function fetchWeatherData(city) {
   }
 
   const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`;
-  const response = await fetch(url);
+  const response = await fetch(url, { signal });
 
   if (!response.ok) {
     if (response.status === 401) {
