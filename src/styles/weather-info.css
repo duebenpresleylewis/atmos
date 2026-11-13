@@ -96,7 +96,7 @@
   }
 }
 
-@media screen and (max-width: 360px) {
+@media screen and (max-width: 420px) {
   .header-title {
     padding: 0.6rem 1rem;
     font-size: 1.25rem;
