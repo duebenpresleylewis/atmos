@@ -43,9 +43,9 @@ export default function initWeatherSearch() {
     const controller = new AbortController();
     activeController = controller;
 
-    // todo add a loading animation
     disposeActiveMap();
-    weatherResults.textContent = "Loading weather...";
+    weatherResults.setAttribute("aria-busy", "true");
+    renderLoading(weatherResults);
 
     try {
       const weather = await fetchWeatherData(city, controller.signal, location);
@@ -63,6 +63,7 @@ export default function initWeatherSearch() {
     } finally {
       if (requestId === latestRequestId) {
         activeController = null;
+        weatherResults.removeAttribute("aria-busy");
       }
     }
   }
@@ -598,6 +599,39 @@ function renderWeatherData(weather, target) {
 function disposeActiveMap() {
   activeMap?.remove();
   activeMap = null;
+}
+
+function renderLoading(target) {
+  const container = document.createElement("section");
+  container.className = "weather-loading";
+  container.setAttribute("role", "status");
+  container.setAttribute("aria-live", "polite");
+  container.setAttribute("aria-label", "Loading weather forecast");
+
+  const surface = document.createElement("div");
+  surface.className = "weather-loading__surface";
+
+  const animation = document.createElement("div");
+  animation.className = "weather-loading__animation";
+  animation.setAttribute("aria-hidden", "true");
+
+  const orbit = document.createElement("span");
+  orbit.className = "weather-loading__orbit";
+  const core = document.createElement("span");
+  core.className = "weather-loading__core";
+  animation.append(orbit, core);
+
+  const title = document.createElement("p");
+  title.className = "weather-loading__title";
+  title.textContent = "Gathering your forecast";
+
+  const detail = document.createElement("p");
+  detail.className = "weather-loading__detail";
+  detail.textContent = "Checking the latest conditions";
+
+  surface.append(animation, title, detail);
+  container.append(surface);
+  target.replaceChildren(container);
 }
 
 function renderError(message, target) {

@@ -13,6 +13,108 @@
   gap: 1.5rem;
 }
 
+.weather-loading {
+  display: grid;
+  width: 100%;
+  min-height: clamp(16rem, 34vh, 23rem);
+  place-items: center;
+  color: #fff;
+  text-align: center;
+}
+
+.weather-loading__surface {
+  display: flex;
+  width: min(100%, 20rem);
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 2.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 1.5rem;
+  background: rgba(15, 23, 42, 0.24);
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.weather-loading__animation {
+  position: relative;
+  display: grid;
+  width: 4.5rem;
+  height: 4.5rem;
+  margin-bottom: 1.25rem;
+  place-items: center;
+}
+
+.weather-loading__orbit {
+  position: absolute;
+  inset: 0.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-right-color: rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  animation: weather-orbit 1.8s linear infinite;
+}
+
+.weather-loading__orbit::after {
+  position: absolute;
+  top: 0.35rem;
+  left: 0.35rem;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.9);
+  content: "";
+}
+
+.weather-loading__core {
+  width: 1.7rem;
+  height: 1.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff, #b9dcff 60%, #8cb8e8);
+  box-shadow: 0 0 24px rgba(190, 220, 255, 0.55);
+  animation: weather-breathe 2.4s ease-in-out infinite;
+}
+
+.weather-loading__title,
+.weather-loading__detail {
+  margin: 0;
+}
+
+.weather-loading__title {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.015em;
+}
+
+.weather-loading__detail {
+  margin-top: 0.4rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.8rem;
+}
+
+@keyframes weather-orbit {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes weather-breathe {
+  50% {
+    opacity: 0.7;
+    transform: scale(0.88);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .weather-loading__orbit,
+  .weather-loading__core {
+    animation: none;
+  }
+}
+
 .forecast-panel {
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.2);
