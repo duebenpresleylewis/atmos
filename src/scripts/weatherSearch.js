@@ -86,6 +86,11 @@ async function fetchWeatherData(city, signal) {
     longitude: location.longitude,
     current:
       "temperature_2m,relative_humidity_2m,weather_code,is_day,wind_speed_10m",
+    hourly:
+      "temperature_2m,precipitation_probability,weather_code,is_day",
+    daily:
+      "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max",
+    forecast_days: "10",
     wind_speed_unit: "ms",
     timezone: "auto",
   });
@@ -99,9 +104,9 @@ async function fetchWeatherData(city, signal) {
 
   const weatherData = await weatherResponse.json();
   const current = weatherData.current;
-  if (!current) {
+  if (!current || !weatherData.hourly || !weatherData.daily) {
     // todo display this in a better way
-    throw new Error("Weather data is unavailable for that city.");
+    throw new Error("Current and forecast data is unavailable for that city.");
   }
 
   const condition = describeWeatherCode(current.weather_code, current.is_day);
@@ -114,6 +119,11 @@ async function fetchWeatherData(city, signal) {
     icon: condition.icon,
     humidity: current.relative_humidity_2m,
     windSpeed: current.wind_speed_10m,
+    latitude: location.latitude,
+    longitude: location.longitude,
+    currentTime: current.time,
+    hourly: weatherData.hourly,
+    daily: weatherData.daily,
   };
 }
 
@@ -191,7 +201,137 @@ function renderWeatherData(weather, target) {
   details.append(humidity, wind);
   card.append(heading, temperature, description, details);
 
-  target.replaceChildren(card);
+  const hourlySection = document.createElement("section");
+  hourlySection.className = "forecast-panel rounded-xl";
+  hourlySection.setAttribute("aria-labelledby", "hourly-forecast-title");
+
+  const hourlyTitle = document.createElement("h2");
+  hourlyTitle.id = "hourly-forecast-title";
+  hourlyTitle.className = "forecast-title";
+  hourlyTitle.textContent = "Next 24 hours";
+
+  const hourlyCards = document.createElement("div");
+  hourlyCards.className = "hourly-forecast";
+  const hourly = weather.hourly;
+  const nextHours = hourly.time
+    .map((time, index) => ({ time, index }))
+    .filter(({ time }) => time >= weather.currentTime)
+    .slice(0, 24);
+
+  for (const { time, index } of nextHours) {
+    const condition = describeWeatherCode(
+      hourly.weather_code[index],
+      hourly.is_day[index],
+    );
+    const hourCard = document.createElement("article");
+    hourCard.className = "hourly-card";
+
+    const hourTime = document.createElement("span");
+    hourTime.className = "forecast-muted";
+    hourTime.textContent = time.slice(11, 16);
+
+    const hourIcon = document.createElement("span");
+    hourIcon.className = "text-2xl";
+    hourIcon.textContent = condition.icon;
+    hourIcon.setAttribute("aria-hidden", "true");
+
+    const hourTemperature = document.createElement("strong");
+    hourTemperature.textContent = `${Math.round(hourly.temperature_2m[index])}°`;
+
+    const precipitation = document.createElement("span");
+    precipitation.className = "forecast-muted";
+    precipitation.textContent = `${hourly.precipitation_probability[index] ?? 0}% rain`;
+
+    hourCard.append(hourTime, hourIcon, hourTemperature, precipitation);
+    hourlyCards.append(hourCard);
+  }
+
+  hourlySection.append(hourlyTitle, hourlyCards);
+
+  const dailySection = document.createElement("section");
+  dailySection.className = "forecast-panel rounded-xl";
+  dailySection.setAttribute("aria-labelledby", "daily-forecast-title");
+
+  const dailyTitle = document.createElement("h2");
+  dailyTitle.id = "daily-forecast-title";
+  dailyTitle.className = "forecast-title";
+  dailyTitle.textContent = "10-day forecast";
+
+  const dailyCards = document.createElement("div");
+  dailyCards.className = "daily-forecast";
+  const daily = weather.daily;
+
+  for (let index = 0; index < daily.time.length; index += 1) {
+    const condition = describeWeatherCode(daily.weather_code[index], true);
+    const dayCard = document.createElement("article");
+    dayCard.className = "daily-card";
+
+    const date = document.createElement("span");
+    date.className = "daily-date";
+    date.textContent = new Date(`${daily.time[index]}T12:00:00`).toLocaleDateString(
+      undefined,
+      { weekday: "short", month: "short", day: "numeric" },
+    );
+
+    const summary = document.createElement("span");
+    summary.className = "daily-condition";
+    summary.textContent = `${condition.icon} ${condition.description}`;
+
+    const temperatures = document.createElement("strong");
+    temperatures.className = "daily-temperatures";
+    temperatures.textContent =
+      `${Math.round(daily.temperature_2m_max[index])}° / ` +
+      `${Math.round(daily.temperature_2m_min[index])}°`;
+
+    const dailyPrecipitation = document.createElement("span");
+    dailyPrecipitation.className = "daily-precipitation forecast-muted";
+    dailyPrecipitation.textContent =
+      `${daily.precipitation_probability_max[index] ?? 0}% rain`;
+
+    dayCard.append(date, summary, temperatures, dailyPrecipitation);
+    dailyCards.append(dayCard);
+  }
+
+  dailySection.append(dailyTitle, dailyCards);
+
+  const mapSection = document.createElement("section");
+  mapSection.className = "forecast-panel location-map rounded-xl";
+
+  const mapTitle = document.createElement("h2");
+  mapTitle.className = "forecast-title";
+  mapTitle.textContent = `Map · ${weather.city}`;
+
+  const mapFrame = document.createElement("iframe");
+  mapFrame.className = "location-map-frame";
+  mapFrame.title = `Map showing ${weather.city}`;
+  mapFrame.loading = "lazy";
+  mapFrame.referrerPolicy = "no-referrer";
+  mapFrame.src = createOpenStreetMapUrl(weather.latitude, weather.longitude);
+
+  const mapAttribution = document.createElement("a");
+  mapAttribution.className = "map-attribution";
+  mapAttribution.href = "https://www.openstreetmap.org/copyright";
+  mapAttribution.target = "_blank";
+  mapAttribution.rel = "noreferrer";
+  mapAttribution.textContent = "© OpenStreetMap contributors";
+
+  mapSection.append(mapTitle, mapFrame, mapAttribution);
+
+  target.replaceChildren(card, hourlySection, dailySection, mapSection);
+}
+
+function createOpenStreetMapUrl(latitude, longitude) {
+  const south = Math.max(-85, latitude - 0.08);
+  const north = Math.min(85, latitude + 0.08);
+  const west = Math.max(-180, longitude - 0.12);
+  const east = Math.min(180, longitude + 0.12);
+  const mapUrl = new URL("https://www.openstreetmap.org/export/embed.html");
+  mapUrl.search = new URLSearchParams({
+    bbox: `${west},${south},${east},${north}`,
+    layer: "mapnik",
+    marker: `${latitude},${longitude}`,
+  });
+  return mapUrl.href;
 }
 
 function renderError(message, target) {

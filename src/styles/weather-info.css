@@ -10,6 +10,104 @@
   gap: 1.5rem;
 }
 
+.weather-card,
+.forecast-panel {
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.weather-card {
+  width: min(100%, 24rem);
+}
+
+.forecast-panel {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 0.75rem;
+}
+
+.forecast-title {
+  margin-bottom: 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.forecast-muted {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.75rem;
+}
+
+.hourly-forecast {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scroll-snap-type: x mandatory;
+}
+
+.hourly-card {
+  display: flex;
+  min-width: 5.25rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.08);
+  scroll-snap-align: start;
+}
+
+.daily-forecast {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.daily-card {
+  display: grid;
+  grid-template-columns: minmax(3.5rem, 0.8fr) minmax(5rem, 1.4fr) auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.daily-card:last-child {
+  border-bottom: 0;
+}
+
+.daily-date,
+.daily-condition {
+  font-size: 0.875rem;
+}
+
+.daily-temperatures,
+.daily-precipitation {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.location-map-frame {
+  display: block;
+  width: 100%;
+  height: 16rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.map-attribution {
+  display: inline-block;
+  margin-top: 0.5rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.75rem;
+  text-decoration: underline;
+}
+
 .current-weather-info {
   width: min(100%, 24rem);
   margin-top: 0;
@@ -91,6 +189,10 @@
     padding: 0.875rem;
   }
 
+  .forecast-panel {
+    padding: 0.875rem;
+  }
+
   .weather-condition {
     font-size: 0.9rem;
   }
@@ -104,5 +206,19 @@
 
   .search-container.is-open .search-input {
     width: min(11rem, calc(100vw - 15rem));
+  }
+
+  .daily-card {
+    grid-template-columns: minmax(3.25rem, 0.8fr) minmax(4.5rem, 1.2fr) auto;
+    gap: 0.5rem;
+  }
+
+  .daily-precipitation {
+    grid-column: 2 / -1;
+    text-align: right;
+  }
+
+  .daily-condition {
+    font-size: 0.75rem;
   }
 }
