@@ -170,11 +170,10 @@ function describeWeatherCode(code, isDay) {
 
 function renderWeatherData(weather, target) {
   const card = document.createElement("section");
-  card.className =
-    "weather-card rounded-xl bg-white/20 p-6 text-white shadow-lg backdrop-blur-md";
+  card.className = "weather-card text-white";
 
   const heading = document.createElement("div");
-  heading.className = "flex items-center gap-3";
+  heading.className = "weather-heading flex items-center gap-3";
 
   const city = document.createElement("h2");
   city.className = "text-2xl font-semibold";
@@ -196,7 +195,7 @@ function renderWeatherData(weather, target) {
   description.textContent = weather.description;
 
   const details = document.createElement("div");
-  details.className = "mt-4 flex gap-6 text-sm opacity-80";
+  details.className = "weather-card-details mt-4 flex gap-6 text-sm opacity-80";
 
   const humidity = document.createElement("span");
   humidity.textContent = `Humidity: ${weather.humidity}%`;
