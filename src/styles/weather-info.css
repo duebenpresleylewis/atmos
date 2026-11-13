@@ -1,4 +1,5 @@
 .weather-dashboard {
+  justify-content: flex-start;
   width: 100%;
   min-height: 100vh;
   min-height: 100svh;
@@ -10,7 +11,45 @@
 
 .weather-results {
   width: min(100%, 56rem);
+  margin-block: auto;
   gap: 1.5rem;
+}
+
+.site-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  padding: 1rem 0 0.25rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.8rem;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
+}
+
+.site-footer__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #fff;
+  text-decoration: none;
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.site-footer__link i {
+  font-size: 1.05rem;
+}
+
+.site-footer__link:hover {
+  transform: translateY(-1px);
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.site-footer__link:focus-visible {
+  border-radius: 0.2rem;
+  outline: 2px solid #fff;
+  outline-offset: 3px;
 }
 
 .weather-loading {
