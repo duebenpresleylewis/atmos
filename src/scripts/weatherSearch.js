@@ -7,10 +7,25 @@ export default function initWeatherSearch() {
   const input = document.querySelector("#search-input");
   const weatherResults = document.querySelector(".weather-results");
   const searchContainer = input?.closest("[data-search-container]");
+  const temperatureUnitButtons = document.querySelectorAll(
+    "[data-temperature-unit]",
+  );
 
   if (!input || !weatherResults || !searchContainer) {
     return;
   }
+
+  let temperatureUnit = loadTemperatureUnit();
+  updateTemperatureUnitButtons(temperatureUnit, temperatureUnitButtons);
+
+  temperatureUnitButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      temperatureUnit = button.dataset.temperatureUnit;
+      saveTemperatureUnit(temperatureUnit);
+      updateTemperatureUnitButtons(temperatureUnit, temperatureUnitButtons);
+      updateTemperatureDisplays(weatherResults, temperatureUnit);
+    });
+  });
 
   const suggestions = document.createElement("ul");
   suggestions.id = "city-suggestions";
@@ -58,7 +73,7 @@ export default function initWeatherSearch() {
         return;
       }
 
-      renderWeatherData(weather, weatherResults);
+      renderWeatherData(weather, weatherResults, temperatureUnit);
     } catch (error) {
       if (error.name === "AbortError" || requestId !== latestRequestId) {
         return;
@@ -324,7 +339,7 @@ async function fetchWeatherData(city, signal, selectedLocation) {
   return {
     city: location.name,
     country: location.country || "",
-    temperature: Math.round(current.temperature_2m),
+    temperature: current.temperature_2m,
     description: condition.description,
     icon: condition.icon,
     humidity: current.relative_humidity_2m,
@@ -439,7 +454,56 @@ function setWeatherBackground(sceneName) {
   video.load();
 }
 
-function renderWeatherData(weather, target) {
+function loadTemperatureUnit() {
+  try {
+    return window.localStorage.getItem("atmos-temperature-unit") === "F"
+      ? "F"
+      : "C";
+  } catch (error) {
+    console.warn("Unable to load the saved temperature unit.", error);
+    return "C";
+  }
+}
+
+function saveTemperatureUnit(unit) {
+  try {
+    window.localStorage.setItem("atmos-temperature-unit", unit);
+  } catch (error) {
+    console.warn("Unable to save the temperature unit preference.", error);
+  }
+}
+
+function updateTemperatureUnitButtons(unit, buttons) {
+  buttons.forEach((button) => {
+    const isSelected = button.dataset.temperatureUnit === unit;
+    button.setAttribute("aria-pressed", String(isSelected));
+    button.classList.toggle("is-selected", isSelected);
+  });
+}
+
+function formatTemperature(celsius, unit) {
+  const temperature = unit === "F" ? (celsius * 9) / 5 + 32 : celsius;
+  return `${Math.round(temperature)}°${unit}`;
+}
+
+function updateTemperatureDisplays(target, unit) {
+  target.querySelectorAll(".current-temperature, .hourly-temperature").forEach(
+    (temperature) => {
+      temperature.textContent = formatTemperature(
+        Number(temperature.dataset.celsius),
+        unit,
+      );
+    },
+  );
+
+  target.querySelectorAll(".daily-temperatures").forEach((temperatures) => {
+    temperatures.textContent =
+      `${formatTemperature(Number(temperatures.dataset.maxCelsius), unit)} / ` +
+      `${formatTemperature(Number(temperatures.dataset.minCelsius), unit)}`;
+  });
+}
+
+function renderWeatherData(weather, target, temperatureUnit) {
   setWeatherBackground(weather.scene);
 
   const card = document.createElement("section");
@@ -460,8 +524,9 @@ function renderWeatherData(weather, target) {
   heading.append(icon);
 
   const temperature = document.createElement("p");
-  temperature.className = "text-5xl font-bold mt-3";
-  temperature.textContent = `${weather.temperature}°C`;
+  temperature.className = "current-temperature text-5xl font-bold mt-3";
+  temperature.dataset.celsius = weather.temperature;
+  temperature.textContent = formatTemperature(weather.temperature, temperatureUnit);
 
   const description = document.createElement("p");
   description.className = "capitalize text-lg mt-2";
@@ -514,7 +579,12 @@ function renderWeatherData(weather, target) {
     hourIcon.setAttribute("aria-hidden", "true");
 
     const hourTemperature = document.createElement("strong");
-    hourTemperature.textContent = `${Math.round(hourly.temperature_2m[index])}°`;
+    hourTemperature.className = "hourly-temperature";
+    hourTemperature.dataset.celsius = hourly.temperature_2m[index];
+    hourTemperature.textContent = formatTemperature(
+      hourly.temperature_2m[index],
+      temperatureUnit,
+    );
 
     const precipitation = document.createElement("span");
     precipitation.className = "forecast-muted";
@@ -557,9 +627,11 @@ function renderWeatherData(weather, target) {
 
     const temperatures = document.createElement("strong");
     temperatures.className = "daily-temperatures";
+    temperatures.dataset.maxCelsius = daily.temperature_2m_max[index];
+    temperatures.dataset.minCelsius = daily.temperature_2m_min[index];
     temperatures.textContent =
-      `${Math.round(daily.temperature_2m_max[index])}° / ` +
-      `${Math.round(daily.temperature_2m_min[index])}°`;
+      `${formatTemperature(daily.temperature_2m_max[index], temperatureUnit)} / ` +
+      `${formatTemperature(daily.temperature_2m_min[index], temperatureUnit)}`;
 
     const dailyPrecipitation = document.createElement("span");
     dailyPrecipitation.className = "daily-precipitation forecast-muted";

@@ -31,27 +31,50 @@
               Atmos
             </h1>
 
-            <div class="search-container" data-search-container>
-              <button
-                class="search-toggle"
-                type="button"
-                aria-label="Open search"
-                aria-expanded="false"
-              >
-                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-              </button>
+            <div class="header-actions">
+              <div class="temperature-unit" role="group" aria-label="Temperature unit">
+                <button
+                  class="temperature-unit__option"
+                  type="button"
+                  data-temperature-unit="C"
+                  aria-label="Celsius"
+                  aria-pressed="true"
+                >
+                  °C
+                </button>
+                <button
+                  class="temperature-unit__option"
+                  type="button"
+                  data-temperature-unit="F"
+                  aria-label="Fahrenheit"
+                  aria-pressed="false"
+                >
+                  °F
+                </button>
+              </div>
 
-              <input
-                type="text"
-                placeholder="Search"
-                id="search-input"
-                class="search-input border-2 border-gray-600 rounded-full placeholder:font-lato"
-                role="combobox"
-                aria-autocomplete="list"
-                aria-expanded="false"
-                aria-controls="city-suggestions"
-                aria-haspopup="listbox"
-              />
+              <div class="search-container" data-search-container>
+                <button
+                  class="search-toggle"
+                  type="button"
+                  aria-label="Open search"
+                  aria-expanded="false"
+                >
+                  <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                </button>
+
+                <input
+                  type="text"
+                  placeholder="Search"
+                  id="search-input"
+                  class="search-input border-2 border-gray-600 rounded-full placeholder:font-lato"
+                  role="combobox"
+                  aria-autocomplete="list"
+                  aria-expanded="false"
+                  aria-controls="city-suggestions"
+                  aria-haspopup="listbox"
+                />
+              </div>
             </div>
           </header>
 
