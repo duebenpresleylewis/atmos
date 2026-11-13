@@ -9,17 +9,10 @@ export default function initWeatherSearch() {
   let activeController = null;
   let latestRequestId = 0;
 
-  input.addEventListener("keydown", async (event) => {
-    if (event.key !== "Enter") {
-      return;
-    }
-
-    event.preventDefault();
-
+  async function loadWeather(city) {
     activeController?.abort();
     activeController = null;
     const requestId = ++latestRequestId;
-    const city = input.value.trim();
     if (!city) {
       renderError("Please enter a city name.", weatherResults);
       return;
@@ -27,6 +20,8 @@ export default function initWeatherSearch() {
 
     const controller = new AbortController();
     activeController = controller;
+
+    // todo add a loading animation
     weatherResults.textContent = "Loading weather...";
 
     try {
@@ -47,44 +42,114 @@ export default function initWeatherSearch() {
         activeController = null;
       }
     }
+  }
+
+  input.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") {
+      return;
+    }
+
+    event.preventDefault();
+    loadWeather(input.value.trim());
   });
+
+  loadWeather("Kyoto");
 }
 
 async function fetchWeatherData(city, signal) {
-  const apiKey = import.meta.env.VITE_OPENWEATHER_API_KEY;
+  const geocodingUrl = new URL("https://geocoding-api.open-meteo.com/v1/search");
+  geocodingUrl.search = new URLSearchParams({
+    name: city,
+    count: "1",
+    language: "en",
+    format: "json",
+  });
 
-  if (!apiKey) {
-    throw new Error("Weather API key is not configured.");
+  const geocodingResponse = await fetch(geocodingUrl, { signal });
+
+  if (!geocodingResponse.ok) {
+
+    // todo display this in a better way
+    throw new Error("Unable to find that city. Please try again.");
   }
 
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`;
-  const response = await fetch(url, { signal });
-
-  if (!response.ok) {
-    if (response.status === 401) {
-      throw new Error("OpenWeather rejected the request. Check your API key.");
-    }
-
-    if (response.status === 404) {
-      throw new Error("City not found. Please try another city name.");
-    }
-
-    const errorData = await response.json().catch(() => null);
-    const message = errorData?.message || "Unable to fetch weather for that city.";
-    throw new Error(message);
+  const locationData = await geocodingResponse.json();
+  const location = locationData.results?.[0];
+  if (!location) {
+    // todo display this in a better way
+    throw new Error("City not found. Please try another city name.");
   }
 
-  const data = await response.json();
+  const weatherUrl = new URL("https://api.open-meteo.com/v1/forecast");
+  weatherUrl.search = new URLSearchParams({
+    latitude: location.latitude,
+    longitude: location.longitude,
+    current:
+      "temperature_2m,relative_humidity_2m,weather_code,is_day,wind_speed_10m",
+    wind_speed_unit: "ms",
+    timezone: "auto",
+  });
+
+  const weatherResponse = await fetch(weatherUrl, { signal });
+  if (!weatherResponse.ok) {
+
+    // todo display this in a better way
+    throw new Error("Unable to fetch weather for that city. Please try again.");
+  }
+
+  const weatherData = await weatherResponse.json();
+  const current = weatherData.current;
+  if (!current) {
+    // todo display this in a better way
+    throw new Error("Weather data is unavailable for that city.");
+  }
+
+  const condition = describeWeatherCode(current.weather_code, current.is_day);
 
   return {
-    city: data.name,
-    country: data.sys?.country || "",
-    temperature: Math.round(data.main?.temp ?? 0),
-    description: data.weather?.[0]?.description || "No description available",
-    icon: data.weather?.[0]?.icon || "",
-    humidity: data.main?.humidity ?? 0,
-    windSpeed: data.wind?.speed ?? 0,
+    city: location.name,
+    country: location.country || "",
+    temperature: Math.round(current.temperature_2m),
+    description: condition.description,
+    icon: condition.icon,
+    humidity: current.relative_humidity_2m,
+    windSpeed: current.wind_speed_10m,
   };
+}
+
+function describeWeatherCode(code, isDay) {
+  const conditions = {
+    0: { description: "Clear sky", icon: isDay ? "☀️" : "🌙" },
+    1: { description: "Mainly clear", icon: isDay ? "🌤️" : "🌙" },
+    2: { description: "Partly cloudy", icon: "⛅" },
+    3: { description: "Overcast", icon: "☁️" },
+    45: { description: "Fog", icon: "🌫️" },
+    48: { description: "Depositing rime fog", icon: "🌫️" },
+    51: { description: "Light drizzle", icon: "🌦️" },
+    53: { description: "Moderate drizzle", icon: "🌦️" },
+    55: { description: "Dense drizzle", icon: "🌧️" },
+    56: { description: "Light freezing drizzle", icon: "🌧️" },
+    57: { description: "Dense freezing drizzle", icon: "🌧️" },
+    61: { description: "Slight rain", icon: "🌧️" },
+    63: { description: "Moderate rain", icon: "🌧️" },
+    65: { description: "Heavy rain", icon: "🌧️" },
+    66: { description: "Light freezing rain", icon: "🌧️" },
+    67: { description: "Heavy freezing rain", icon: "🌧️" },
+    71: { description: "Slight snow", icon: "🌨️" },
+    73: { description: "Moderate snow", icon: "🌨️" },
+    75: { description: "Heavy snow", icon: "❄️" },
+    77: { description: "Snow grains", icon: "🌨️" },
+    80: { description: "Slight rain showers", icon: "🌦️" },
+    81: { description: "Moderate rain showers", icon: "🌧️" },
+    82: { description: "Violent rain showers", icon: "🌧️" },
+    85: { description: "Slight snow showers", icon: "🌨️" },
+    86: { description: "Heavy snow showers", icon: "❄️" },
+    95: { description: "Thunderstorm", icon: "⛈️" },
+    96: { description: "Thunderstorm with slight hail", icon: "⛈️" },
+    99: { description: "Thunderstorm with heavy hail", icon: "⛈️" },
+  };
+
+  return conditions[code] || { description: "Unknown conditions", icon: "🌡️" };
 }
 
 function renderWeatherData(weather, target) {
@@ -100,13 +165,11 @@ function renderWeatherData(weather, target) {
   city.textContent = `${weather.city}${weather.country ? `, ${weather.country}` : ""}`;
   heading.append(city);
 
-  if (weather.icon) {
-    const icon = document.createElement("img");
-    icon.src = `https://openweathermap.org/img/wn/${weather.icon}@2x.png`;
-    icon.alt = weather.description;
-    icon.className = "w-14 h-14";
-    heading.append(icon);
-  }
+  const icon = document.createElement("span");
+  icon.className = "text-4xl";
+  icon.textContent = weather.icon;
+  icon.setAttribute("aria-hidden", "true");
+  heading.append(icon);
 
   const temperature = document.createElement("p");
   temperature.className = "text-5xl font-bold mt-3";
