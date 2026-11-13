@@ -1,3 +1,8 @@
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+let activeMap = null;
+
 export default function initWeatherSearch() {
   const input = document.querySelector("#search-input");
   const weatherResults = document.querySelector(".weather-results");
@@ -22,6 +27,7 @@ export default function initWeatherSearch() {
     activeController = controller;
 
     // todo add a loading animation
+    disposeActiveMap();
     weatherResults.textContent = "Loading weather...";
 
     try {
@@ -301,40 +307,38 @@ function renderWeatherData(weather, target) {
   mapTitle.className = "forecast-title";
   mapTitle.textContent = `Map · ${weather.city}`;
 
-  const mapFrame = document.createElement("iframe");
-  mapFrame.className = "location-map-frame";
-  mapFrame.title = `Map showing ${weather.city}`;
-  mapFrame.loading = "lazy";
-  mapFrame.referrerPolicy = "no-referrer";
-  mapFrame.src = createOpenStreetMapUrl(weather.latitude, weather.longitude);
+  const mapCanvas = document.createElement("div");
+  mapCanvas.className = "location-map-canvas";
+  mapCanvas.setAttribute("role", "region");
+  mapCanvas.setAttribute("aria-label", `Map showing ${weather.city}`);
+  mapSection.append(mapTitle, mapCanvas);
 
-  const mapAttribution = document.createElement("a");
-  mapAttribution.className = "map-attribution";
-  mapAttribution.href = "https://www.openstreetmap.org/copyright";
-  mapAttribution.target = "_blank";
-  mapAttribution.rel = "noreferrer";
-  mapAttribution.textContent = "© OpenStreetMap contributors";
-
-  mapSection.append(mapTitle, mapFrame, mapAttribution);
-
+  disposeActiveMap();
   target.replaceChildren(card, hourlySection, dailySection, mapSection);
+  activeMap = L.map(mapCanvas, { scrollWheelZoom: false }).setView(
+    [weather.latitude, weather.longitude],
+    12,
+  );
+  activeMap.attributionControl.setPrefix(false);
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+  }).addTo(activeMap);
+  const markerPopup = document.createElement("span");
+  markerPopup.textContent = weather.city;
+  L.marker([weather.latitude, weather.longitude])
+    .addTo(activeMap)
+    .bindPopup(markerPopup);
 }
 
-function createOpenStreetMapUrl(latitude, longitude) {
-  const south = Math.max(-85, latitude - 0.08);
-  const north = Math.min(85, latitude + 0.08);
-  const west = Math.max(-180, longitude - 0.12);
-  const east = Math.min(180, longitude + 0.12);
-  const mapUrl = new URL("https://www.openstreetmap.org/export/embed.html");
-  mapUrl.search = new URLSearchParams({
-    bbox: `${west},${south},${east},${north}`,
-    layer: "mapnik",
-    marker: `${latitude},${longitude}`,
-  });
-  return mapUrl.href;
+function disposeActiveMap() {
+  activeMap?.remove();
+  activeMap = null;
 }
 
 function renderError(message, target) {
+  disposeActiveMap();
   const container = document.createElement("section");
   container.className =
     "rounded-xl bg-red-500/20 p-6 text-white shadow-lg backdrop-blur-md";
