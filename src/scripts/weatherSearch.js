@@ -1,7 +1,20 @@
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import markerIconUrl from "leaflet/dist/images/marker-icon.png";
+import markerIconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
+import markerShadowUrl from "leaflet/dist/images/marker-shadow.png";
 
 let activeMap = null;
+const mapMarkerIcon = L.icon({
+  iconUrl: markerIconUrl,
+  iconRetinaUrl: markerIconRetinaUrl,
+  shadowUrl: markerShadowUrl,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  tooltipAnchor: [16, -28],
+  shadowSize: [41, 41],
+});
 
 export default function initWeatherSearch() {
   const input = document.querySelector("#search-input");
@@ -671,7 +684,7 @@ function renderWeatherData(weather, target, temperatureUnit) {
   }).addTo(activeMap);
   const markerPopup = document.createElement("span");
   markerPopup.textContent = weather.city;
-  L.marker([weather.latitude, weather.longitude])
+  L.marker([weather.latitude, weather.longitude], { icon: mapMarkerIcon })
     .addTo(activeMap)
     .bindPopup(markerPopup);
 }
