@@ -3,6 +3,9 @@
   min-height: 100vh;
   min-height: 100svh;
   padding: 6rem 1rem 2rem;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .weather-results {

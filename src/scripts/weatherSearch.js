@@ -116,6 +116,7 @@ async function fetchWeatherData(city, signal) {
   }
 
   const condition = describeWeatherCode(current.weather_code, current.is_day);
+  const scene = getWeatherScene(current.weather_code, current.wind_speed_10m);
 
   return {
     city: location.name,
@@ -125,6 +126,7 @@ async function fetchWeatherData(city, signal) {
     icon: condition.icon,
     humidity: current.relative_humidity_2m,
     windSpeed: current.wind_speed_10m,
+    scene,
     latitude: location.latitude,
     longitude: location.longitude,
     currentTime: current.time,
@@ -168,7 +170,75 @@ function describeWeatherCode(code, isDay) {
   return conditions[code] || { description: "Unknown conditions", icon: "🌡️" };
 }
 
+function getWeatherScene(code, windSpeed) {
+  if ([95, 96, 99].includes(code)) {
+    return "thunderstorm";
+  }
+  if ([71, 73, 75, 77, 85, 86].includes(code)) {
+    return "snow";
+  }
+  if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) {
+    return "rain";
+  }
+  if ([51, 53, 55, 56, 57].includes(code)) {
+    return "drizzle";
+  }
+  if ([45, 48].includes(code)) {
+    return "foggy";
+  }
+  if ([0, 1, 2, 3].includes(code) && windSpeed >= 10) {
+    return "windy";
+  }
+  if (code === 3) {
+    return "cloudy";
+  }
+  if (code === 2) {
+    return "partly-cloudy";
+  }
+  if (code === 0 || code === 1) {
+    return "sunny";
+  }
+  return windSpeed >= 10 ? "windy" : "partly-cloudy";
+}
+
+function setWeatherBackground(sceneName) {
+  const dashboard = document.querySelector(".weather-dashboard");
+  const video = dashboard?.querySelector("video");
+  if (!dashboard || !video) {
+    return;
+  }
+
+  const scene = {
+    sunny: { video: "sunny", image: "sunny" },
+    "partly-cloudy": { video: "partly-cloudy", image: "partly-cloudy" },
+    cloudy: { video: "cloudy", image: "cloudy" },
+    foggy: { video: "foggy", image: "fog" },
+    drizzle: { video: "drizzle", image: "drizzle" },
+    rain: { video: "rain", image: "rain" },
+    snow: { video: "snow", image: "snow" },
+    thunderstorm: { video: "thunderstorm", image: "thunderstorm" },
+    windy: { video: "windy", image: "windy" },
+    haze: { video: "haze", image: "haze" },
+  }[sceneName];
+
+  if (!scene) {
+    throw new Error(`No background assets configured for weather scene: ${sceneName}`);
+  }
+
+  const fallbackImage = `/fallback-images/${scene.image}.jpg`;
+  dashboard.style.backgroundImage = `url("${fallbackImage}")`;
+  video.poster = fallbackImage;
+  video.hidden = false;
+  video.onerror = () => {
+    video.hidden = true;
+  };
+  video.src = `/videos/${scene.video}.webm`;
+  video.load();
+}
+
 function renderWeatherData(weather, target) {
+  setWeatherBackground(weather.scene);
+
   const card = document.createElement("section");
   card.className = "weather-card text-white";
 
