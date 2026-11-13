@@ -443,14 +443,14 @@ function setWeatherBackground(sceneName) {
     throw new Error(`No background assets configured for weather scene: ${sceneName}`);
   }
 
-  const fallbackImage = `/fallback-images/${scene.image}.jpg`;
+  const fallbackImage = `${import.meta.env.BASE_URL}fallback-images/${scene.image}.jpg`;
   dashboard.style.backgroundImage = `url("${fallbackImage}")`;
   video.poster = fallbackImage;
   video.hidden = false;
   video.onerror = () => {
     video.hidden = true;
   };
-  video.src = `/videos/${scene.video}.webm`;
+  video.src = `${import.meta.env.BASE_URL}videos/${scene.video}.webm`;
   video.load();
 }
 
