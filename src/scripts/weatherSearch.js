@@ -35,8 +35,13 @@ export default function initWeatherSearch() {
     closeSuggestions();
 
     const requestId = ++latestRequestId;
+    weatherResults.removeAttribute("aria-busy");
     if (!city) {
-      renderError("Please enter a city name.", weatherResults);
+      renderError(
+        "Check your search",
+        "Please enter a city name.",
+        weatherResults,
+      );
       return;
     }
 
@@ -59,7 +64,12 @@ export default function initWeatherSearch() {
         return;
       }
 
-      renderError(error.message, weatherResults);
+      renderError(
+        "Weather unavailable",
+        "Please try again later.",
+        weatherResults,
+        () => loadWeather(city, location),
+      );
     } finally {
       if (requestId === latestRequestId) {
         activeController = null;
@@ -299,14 +309,12 @@ async function fetchWeatherData(city, signal, selectedLocation) {
   const weatherResponse = await fetch(weatherUrl, { signal });
   if (!weatherResponse.ok) {
 
-    // todo display this in a better way
     throw new Error("Unable to fetch weather for that city. Please try again.");
   }
 
   const weatherData = await weatherResponse.json();
   const current = weatherData.current;
   if (!current || !weatherData.hourly || !weatherData.daily) {
-    // todo display this in a better way
     throw new Error("Current and forecast data is unavailable for that city.");
   }
 
@@ -634,16 +642,39 @@ function renderLoading(target) {
   target.replaceChildren(container);
 }
 
-function renderError(message, target) {
+function renderError(titleText, message, target, onRetry) {
   disposeActiveMap();
   const container = document.createElement("section");
-  container.className =
-    "rounded-xl bg-red-500/20 p-6 text-white shadow-lg backdrop-blur-md";
+  container.className = "weather-error";
+  container.setAttribute("role", "alert");
+  container.setAttribute("aria-live", "assertive");
+
+  const surface = document.createElement("div");
+  surface.className = "weather-error__surface";
+
+  const icon = document.createElement("span");
+  icon.className = "weather-error__icon";
+  icon.setAttribute("aria-hidden", "true");
+  icon.textContent = "!";
+
+  const title = document.createElement("h2");
+  title.className = "weather-error__title";
+  title.textContent = titleText;
 
   const error = document.createElement("p");
-  error.className = "font-semibold";
+  error.className = "weather-error__message";
   error.textContent = message;
 
-  container.append(error);
+  surface.append(icon, title, error);
+  if (onRetry) {
+    const retry = document.createElement("button");
+    retry.className = "weather-error__retry";
+    retry.type = "button";
+    retry.textContent = "Try again";
+    retry.addEventListener("click", onRetry);
+    surface.append(retry);
+  }
+
+  container.append(surface);
   target.replaceChildren(container);
 }
