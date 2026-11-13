@@ -1,8 +1,8 @@
 export default function initWeatherSearch() {
   const input = document.querySelector("#search-input");
-  const weatherDashboard = document.querySelector(".weather-dashboard");
+  const weatherResults = document.querySelector(".weather-results");
 
-  if (!input || !weatherDashboard) {
+  if (!input || !weatherResults) {
     return;
   }
 
@@ -21,13 +21,13 @@ export default function initWeatherSearch() {
     const requestId = ++latestRequestId;
     const city = input.value.trim();
     if (!city) {
-      renderError("Please enter a city name.", weatherDashboard);
+      renderError("Please enter a city name.", weatherResults);
       return;
     }
 
     const controller = new AbortController();
     activeController = controller;
-    weatherDashboard.textContent = "Loading weather...";
+    weatherResults.textContent = "Loading weather...";
 
     try {
       const weather = await fetchWeatherData(city, controller.signal);
@@ -35,13 +35,13 @@ export default function initWeatherSearch() {
         return;
       }
 
-      renderWeatherData(weather, weatherDashboard);
+      renderWeatherData(weather, weatherResults);
     } catch (error) {
       if (error.name === "AbortError" || requestId !== latestRequestId) {
         return;
       }
 
-      renderError(error.message, weatherDashboard);
+      renderError(error.message, weatherResults);
     } finally {
       if (requestId === latestRequestId) {
         activeController = null;

@@ -1,55 +1,108 @@
+.weather-dashboard {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: 6rem 1rem 2rem;
+}
+
+.weather-results {
+  width: min(100%, 56rem);
+  gap: 1.5rem;
+}
+
 .current-weather-info {
-  padding: 1rem;
-  margin-top: 1rem;
+  width: min(100%, 24rem);
+  margin-top: 0;
+  padding: clamp(1.25rem, 3vw, 3rem);
 }
 
 .current-weather-details {
-  padding: 1.25rem 2rem;
+  width: 100%;
+  justify-content: space-around;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.forecast-info {
+  display: grid;
+  width: 100%;
+  gap: 1rem;
+}
+
+.complete-weather {
+  width: 100%;
+  padding: 1rem;
+}
+
+.weather-condition {
+  text-align: center;
+}
+
+.intervals-weather-grid {
+  grid-template-columns: repeat(auto-fit, minmax(3rem, 1fr));
+  width: min(100%, 32rem);
+}
+
+.time-stamp-card {
+  align-items: center;
+  text-align: center;
 }
 
 .humidity-wind {
   text-transform: uppercase;
-  font-size: 1.3rem;
+  font-size: clamp(0.9rem, 2vw, 1.3rem);
   text-align: center;
   text-shadow: 0px 0px 8px #808080;
 }
 
-@media screen and (max-width: 768px) {
-  .current-weather-info {
-    padding: 1.5rem;
-    margin-top: 1.5rem;
+@media screen and (max-width: 767px) {
+  .weather-dashboard {
+    padding: 5.5rem 0.75rem 1.5rem;
+    justify-content: flex-start;
   }
+
+  .weather-results {
+    gap: 1rem;
+  }
+
+  .current-weather-info {
+    padding: 1.25rem;
+  }
+
   .current-weather-info #requested-city {
     font-size: 1.15rem;
+    text-align: center;
   }
 
   .current-weather-info .current-weather-temp {
-    font-size: 2rem;
+    font-size: clamp(2.5rem, 12vw, 3.5rem);
   }
 
   .current-weather-info .current-weather-status {
     font-size: 1.15rem;
   }
+
   .current-weather-info .current-weather-humidity {
     font-size: 1.15rem;
   }
-}
 
-@media screen and (min-width: 768px) {
-  .current-weather-info {
-    padding: 2rem;
-    margin-top: 2rem;
+  .current-weather-details,
+  .complete-weather {
+    padding: 0.875rem;
   }
 
-  .wind,
-  .humidity {
-    font-size: 1.15rem;
+  .weather-condition {
+    font-size: 0.9rem;
   }
 }
 
-@media screen and (min-width: 1024px) {
-  .current-weather-info {
-    padding: 3rem;
-    margin-top: 3rem;
+@media screen and (max-width: 360px) {
+  .header-title {
+    padding: 0.6rem 1rem;
+    font-size: 1.25rem;
+  }
+
+  .search-container.is-open .search-input {
+    width: min(11rem, calc(100vw - 15rem));
   }
 }

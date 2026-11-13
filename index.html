@@ -17,32 +17,6 @@
 
   </head>
   <body class="font-inter">
-    <header
-      class="header-container flex justify-between items-center bg-white/10 backdrop-blur-lg shadow-xl border-b-2 border-white/20"
-    >
-      <h1 class="title text-blue-100 text-3xl font-bold font-roboto">Atmos</h1>
-
-      <!-- for smaller screens i'll have a search icon that expands into search box on click -->
-
-      <div class="search-container" data-search-container>
-        <button
-          class="search-toggle"
-          type="button"
-          aria-label="Open search"
-          aria-expanded="false"
-        >
-          <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-        </button>
-
-        <input
-          type="text"
-          placeholder="Search"
-          id="search-input"
-          class="search-input border-2 border-gray-600 rounded-full placeholder:font-lato"
-        />
-      </div>
-    </header>
-
     <main class="main-container">
       <div id="main-grid-container">
         <div class="stored-region"></div>
@@ -50,6 +24,34 @@
         <div
           class="weather-dashboard relative isolate flex flex-col items-center justify-center gap-8 overflow-hidden bg-blue-600"
         >
+          <header
+            class="header-container absolute inset-x-0 top-0 z-20 flex items-center justify-between"
+          >
+            <h1
+              class="header-title rounded-full border border-white/25 bg-white/10 text-2xl font-bold text-white shadow-xl backdrop-blur-lg font-roboto"
+            >
+              Atmos
+            </h1>
+
+            <div class="search-container" data-search-container>
+              <button
+                class="search-toggle"
+                type="button"
+                aria-label="Open search"
+                aria-expanded="false"
+              >
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+              </button>
+
+              <input
+                type="text"
+                placeholder="Search"
+                id="search-input"
+                class="search-input border-2 border-gray-600 rounded-full placeholder:font-lato"
+              />
+            </div>
+          </header>
+
           <video
             class="pointer-events-none absolute inset-0 h-full w-full object-cover motion-reduce:hidden"
             autoplay
@@ -72,53 +74,57 @@
           ></div>
 
           <div
-            class="current-weather-info relative z-10 flex flex-col items-center justify-center gap-4 bg-amber-50/10 backdrop-blur-sm shadow-xl border-2 border-white/20 rounded-lg"
+            class="weather-results relative z-10 flex flex-col items-center justify-center gap-8"
           >
-            <h1 id="requested-city" class="text-3xl">Woodland Park</h1>
-            <div class="current-weather-temp text-6xl">59°F</div>
-            <div class="current-weather-icon text-3xl">⛅</div>
-            <div class="current-weather-status font-bold text-2xl">
-              Partly Cloudy
-            </div>
-          </div>
-
-          <div class="forecast-info relative z-10">
             <div
-              class="current-weather-details flex justify-between items-center gap-4 bg-amber-50/10 backdrop-blur-sm shadow-xl border-2 border-white/20 rounded-lg p-4"
+              class="current-weather-info flex flex-col items-center justify-center gap-4 bg-amber-50/10 backdrop-blur-sm shadow-xl border-2 border-white/20 rounded-lg"
             >
-              <div
-                class="weather-details flex flex-col items-center justify-around gap-2"
-              >
-                <span class="wind text-xs text-black">Wind</span>
-                <span class="humidity-wind font-lato">2.4 km/h</span>
-              </div>
-
-              <div
-                class="weather-details flex flex-col items-center justify-around gap-2"
-              >
-                <span class="humidity text-xs text-black">Humidity</span>
-                <span class="humidity-wind font-lato">65%</span>
+              <h1 id="requested-city" class="text-3xl">Woodland Park</h1>
+              <div class="current-weather-temp text-6xl">59°F</div>
+              <div class="current-weather-icon text-3xl">⛅</div>
+              <div class="current-weather-status font-bold text-2xl">
+                Partly Cloudy
               </div>
             </div>
 
-            <div
-              class="complete-weather flex flex-col items-center justify-center gap-4 bg-amber-50/10 backdrop-blur-sm shadow-xl border-2 border-white/20 rounded-lg p-4"
-            >
-              <div class="weather-condition">
-                Cloudy conditions will continue for the next few hours.
-              </div>
-
-              <div class="intervals-weather-grid grid grid-cols-5 gap-4">
-                <!-- number of items are depended upon at what time the user checks the weather, so populate using js -->
-                <div class="time-stamp-card flex flex-col">
-                  <span>Now</span>
-                  <span>🌦️</span>
-                  <span>59°</span>
+            <div class="forecast-info">
+              <div
+                class="current-weather-details flex justify-between items-center gap-4 bg-amber-50/10 backdrop-blur-sm shadow-xl border-2 border-white/20 rounded-lg p-4"
+              >
+                <div
+                  class="weather-details flex flex-col items-center justify-around gap-2"
+                >
+                  <span class="wind text-xs text-black">Wind</span>
+                  <span class="humidity-wind font-lato">2.4 km/h</span>
                 </div>
-                <div class="time-stamp-card flex flex-col">
-                  <span>Now</span>
-                  <span>🌦️</span>
-                  <span>59°</span>
+
+                <div
+                  class="weather-details flex flex-col items-center justify-around gap-2"
+                >
+                  <span class="humidity text-xs text-black">Humidity</span>
+                  <span class="humidity-wind font-lato">65%</span>
+                </div>
+              </div>
+
+              <div
+                class="complete-weather flex flex-col items-center justify-center gap-4 bg-amber-50/10 backdrop-blur-sm shadow-xl border-2 border-white/20 rounded-lg p-4"
+              >
+                <div class="weather-condition">
+                  Cloudy conditions will continue for the next few hours.
+                </div>
+
+                <div class="intervals-weather-grid grid grid-cols-5 gap-4">
+                  <!-- number of items are depended upon at what time the user checks the weather, so populate using js -->
+                  <div class="time-stamp-card flex flex-col">
+                    <span>Now</span>
+                    <span>🌦️</span>
+                    <span>59°</span>
+                  </div>
+                  <div class="time-stamp-card flex flex-col">
+                    <span>Now</span>
+                    <span>🌦️</span>
+                    <span>59°</span>
+                  </div>
                 </div>
               </div>
             </div>
