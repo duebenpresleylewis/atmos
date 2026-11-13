@@ -27,7 +27,7 @@ export default function initWeatherSearch() {
 
     const controller = new AbortController();
     activeController = controller;
-    weatherDashboard.innerHTML = "<p>Loading weather...</p>";
+    weatherDashboard.textContent = "Loading weather...";
 
     try {
       const weather = await fetchWeatherData(city, controller.signal);
@@ -88,30 +88,58 @@ async function fetchWeatherData(city, signal) {
 }
 
 function renderWeatherData(weather, target) {
-  const iconUrl = weather.icon
-    ? `https://openweathermap.org/img/wn/${weather.icon}@2x.png`
-    : "";
+  const card = document.createElement("section");
+  card.className =
+    "weather-card rounded-xl bg-white/20 p-6 text-white shadow-lg backdrop-blur-md";
 
-  target.innerHTML = `
-    <section class="weather-card rounded-xl bg-white/20 p-6 text-white shadow-lg backdrop-blur-md">
-      <div class="flex items-center gap-3">
-        <h2 class="text-2xl font-semibold">${weather.city}${weather.country ? `, ${weather.country}` : ""}</h2>
-        ${iconUrl ? `<img src="${iconUrl}" alt="${weather.description}" class="w-14 h-14" />` : ""}
-      </div>
-      <p class="text-5xl font-bold mt-3">${weather.temperature}°C</p>
-      <p class="capitalize text-lg mt-2">${weather.description}</p>
-      <div class="mt-4 flex gap-6 text-sm opacity-80">
-        <span>Humidity: ${weather.humidity}%</span>
-        <span>Wind: ${weather.windSpeed} m/s</span>
-      </div>
-    </section>
-  `;
+  const heading = document.createElement("div");
+  heading.className = "flex items-center gap-3";
+
+  const city = document.createElement("h2");
+  city.className = "text-2xl font-semibold";
+  city.textContent = `${weather.city}${weather.country ? `, ${weather.country}` : ""}`;
+  heading.append(city);
+
+  if (weather.icon) {
+    const icon = document.createElement("img");
+    icon.src = `https://openweathermap.org/img/wn/${weather.icon}@2x.png`;
+    icon.alt = weather.description;
+    icon.className = "w-14 h-14";
+    heading.append(icon);
+  }
+
+  const temperature = document.createElement("p");
+  temperature.className = "text-5xl font-bold mt-3";
+  temperature.textContent = `${weather.temperature}°C`;
+
+  const description = document.createElement("p");
+  description.className = "capitalize text-lg mt-2";
+  description.textContent = weather.description;
+
+  const details = document.createElement("div");
+  details.className = "mt-4 flex gap-6 text-sm opacity-80";
+
+  const humidity = document.createElement("span");
+  humidity.textContent = `Humidity: ${weather.humidity}%`;
+
+  const wind = document.createElement("span");
+  wind.textContent = `Wind: ${weather.windSpeed} m/s`;
+
+  details.append(humidity, wind);
+  card.append(heading, temperature, description, details);
+
+  target.replaceChildren(card);
 }
 
 function renderError(message, target) {
-  target.innerHTML = `
-    <section class="rounded-xl bg-red-500/20 p-6 text-white shadow-lg backdrop-blur-md">
-      <p class="font-semibold">${message}</p>
-    </section>
-  `;
+  const container = document.createElement("section");
+  container.className =
+    "rounded-xl bg-red-500/20 p-6 text-white shadow-lg backdrop-blur-md";
+
+  const error = document.createElement("p");
+  error.className = "font-semibold";
+  error.textContent = message;
+
+  container.append(error);
+  target.replaceChildren(container);
 }
