@@ -6,17 +6,34 @@ let activeMap = null;
 export default function initWeatherSearch() {
   const input = document.querySelector("#search-input");
   const weatherResults = document.querySelector(".weather-results");
+  const searchContainer = input?.closest("[data-search-container]");
 
-  if (!input || !weatherResults) {
+  if (!input || !weatherResults || !searchContainer) {
     return;
   }
 
+  const suggestions = document.createElement("ul");
+  suggestions.id = "city-suggestions";
+  suggestions.className = "city-suggestions";
+  suggestions.setAttribute("role", "listbox");
+  suggestions.setAttribute("aria-label", "City suggestions");
+  suggestions.hidden = true;
+  searchContainer.append(suggestions);
+
   let activeController = null;
+  let suggestionsController = null;
+  let suggestionTimeout = null;
+  let locations = [];
+  let activeSuggestionIndex = -1;
   let latestRequestId = 0;
 
-  async function loadWeather(city) {
+  async function loadWeather(city, location) {
     activeController?.abort();
     activeController = null;
+    suggestionsController?.abort();
+    window.clearTimeout(suggestionTimeout);
+    closeSuggestions();
+
     const requestId = ++latestRequestId;
     if (!city) {
       renderError("Please enter a city name.", weatherResults);
@@ -31,7 +48,7 @@ export default function initWeatherSearch() {
     weatherResults.textContent = "Loading weather...";
 
     try {
-      const weather = await fetchWeatherData(city, controller.signal);
+      const weather = await fetchWeatherData(city, controller.signal, location);
       if (requestId !== latestRequestId) {
         return;
       }
@@ -50,39 +67,216 @@ export default function initWeatherSearch() {
     }
   }
 
+  function closeSuggestions() {
+    suggestions.hidden = true;
+    activeSuggestionIndex = -1;
+    input.setAttribute("aria-expanded", "false");
+    input.removeAttribute("aria-activedescendant");
+  }
+
+  function selectSuggestion(index) {
+    const location = locations[index];
+    if (!location) {
+      return;
+    }
+
+    input.value = location.name;
+    loadWeather(location.name, location);
+  }
+
+  function renderSuggestions(results) {
+    locations = results;
+    activeSuggestionIndex = -1;
+    suggestions.replaceChildren();
+
+    if (results.length === 0) {
+      const emptyState = document.createElement("li");
+      emptyState.className = "city-suggestion-message";
+      emptyState.textContent = "No matching cities found.";
+      emptyState.setAttribute("role", "presentation");
+      suggestions.append(emptyState);
+      suggestions.hidden = false;
+      input.setAttribute("aria-expanded", "true");
+      input.removeAttribute("aria-activedescendant");
+      return;
+    }
+
+    results.forEach((location, index) => {
+      const item = document.createElement("li");
+      item.setAttribute("role", "presentation");
+
+      const option = document.createElement("button");
+      option.id = `city-suggestion-${index}`;
+      option.type = "button";
+      option.className = "city-suggestion";
+      option.setAttribute("role", "option");
+      option.setAttribute("aria-selected", "false");
+      option.dataset.index = String(index);
+
+      const name = document.createElement("span");
+      name.className = "city-suggestion-name";
+      name.textContent = location.name;
+
+      const details = document.createElement("span");
+      details.className = "city-suggestion-details";
+      details.textContent = [location.admin1, location.country]
+        .filter(Boolean)
+        .join(", ");
+
+      option.append(name, details);
+      item.append(option);
+      suggestions.append(item);
+    });
+
+    suggestions.hidden = false;
+    input.setAttribute("aria-expanded", "true");
+  }
+
+  function setActiveSuggestion(index) {
+    const options = suggestions.querySelectorAll('[role="option"]');
+    if (options.length === 0) {
+      return;
+    }
+
+    activeSuggestionIndex = (index + options.length) % options.length;
+    options.forEach((option, optionIndex) => {
+      const isActive = optionIndex === activeSuggestionIndex;
+      option.setAttribute("aria-selected", String(isActive));
+      option.classList.toggle("is-active", isActive);
+    });
+    input.setAttribute(
+      "aria-activedescendant",
+      `city-suggestion-${activeSuggestionIndex}`,
+    );
+    options[activeSuggestionIndex].scrollIntoView({ block: "nearest" });
+  }
+
+  input.addEventListener("input", () => {
+    suggestionsController?.abort();
+    suggestionsController = null;
+    window.clearTimeout(suggestionTimeout);
+
+    const query = input.value.trim();
+    if (query.length < 2) {
+      locations = [];
+      closeSuggestions();
+      return;
+    }
+
+    suggestionTimeout = window.setTimeout(async () => {
+      const controller = new AbortController();
+      suggestionsController = controller;
+
+      try {
+        const results = await searchLocations(query, controller.signal);
+        if (input.value.trim() === query) {
+          renderSuggestions(results);
+        }
+      } catch (error) {
+        if (error.name === "AbortError") {
+          return;
+        }
+
+        locations = [];
+        renderSuggestionMessage("City suggestions are unavailable.");
+      } finally {
+        if (suggestionsController === controller) {
+          suggestionsController = null;
+        }
+      }
+    }, 300);
+  });
+
+  function renderSuggestionMessage(message) {
+    suggestions.replaceChildren();
+    const item = document.createElement("li");
+    item.className = "city-suggestion-message";
+    item.setAttribute("role", "presentation");
+    item.textContent = message;
+    suggestions.append(item);
+    suggestions.hidden = false;
+    input.setAttribute("aria-expanded", "true");
+    input.removeAttribute("aria-activedescendant");
+  }
+
+  suggestions.addEventListener("click", (event) => {
+    const option = event.target.closest("[data-index]");
+    if (option) {
+      selectSuggestion(Number(option.dataset.index));
+    }
+  });
+
   input.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowDown" && !suggestions.hidden) {
+      event.preventDefault();
+      setActiveSuggestion(activeSuggestionIndex + 1);
+      return;
+    }
+    if (event.key === "ArrowUp" && !suggestions.hidden) {
+      event.preventDefault();
+      setActiveSuggestion(
+        activeSuggestionIndex < 0
+          ? suggestions.querySelectorAll('[role="option"]').length - 1
+          : activeSuggestionIndex - 1,
+      );
+      return;
+    }
+    if (event.key === "Escape" && !suggestions.hidden) {
+      event.stopPropagation();
+      closeSuggestions();
+      return;
+    }
     if (event.key !== "Enter") {
       return;
     }
 
     event.preventDefault();
-    loadWeather(input.value.trim());
+    if (activeSuggestionIndex >= 0 && !suggestions.hidden) {
+      selectSuggestion(activeSuggestionIndex);
+    } else {
+      loadWeather(input.value.trim());
+    }
+  });
+
+  input.addEventListener("blur", () => {
+    window.setTimeout(() => {
+      if (!searchContainer.contains(document.activeElement)) {
+        closeSuggestions();
+      }
+    }, 100);
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!searchContainer.contains(event.target)) {
+      closeSuggestions();
+    }
   });
 
   loadWeather("Kyoto");
 }
 
-async function fetchWeatherData(city, signal) {
+async function searchLocations(query, signal) {
   const geocodingUrl = new URL("https://geocoding-api.open-meteo.com/v1/search");
   geocodingUrl.search = new URLSearchParams({
-    name: city,
-    count: "1",
+    name: query,
+    count: "5",
     language: "en",
     format: "json",
   });
 
   const geocodingResponse = await fetch(geocodingUrl, { signal });
-
   if (!geocodingResponse.ok) {
-
-    // todo display this in a better way
-    throw new Error("Unable to find that city. Please try again.");
+    throw new Error("Unable to fetch city suggestions.");
   }
 
   const locationData = await geocodingResponse.json();
-  const location = locationData.results?.[0];
+  return locationData.results || [];
+}
+
+async function fetchWeatherData(city, signal, selectedLocation) {
+  const location =
+    selectedLocation || (await searchLocations(city, signal))[0];
   if (!location) {
-    // todo display this in a better way
     throw new Error("City not found. Please try another city name.");
   }
 

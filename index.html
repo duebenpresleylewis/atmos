@@ -19,8 +19,6 @@
   <body class="font-inter">
     <main class="main-container">
       <div id="main-grid-container">
-        <div class="stored-region"></div>
-
         <div
           class="weather-dashboard relative isolate flex flex-col items-center justify-center gap-8 overflow-hidden bg-blue-600"
         >
@@ -48,6 +46,11 @@
                 placeholder="Search"
                 id="search-input"
                 class="search-input border-2 border-gray-600 rounded-full placeholder:font-lato"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-expanded="false"
+                aria-controls="city-suggestions"
+                aria-haspopup="listbox"
               />
             </div>
           </header>
