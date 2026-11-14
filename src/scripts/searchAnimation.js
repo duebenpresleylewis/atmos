@@ -21,6 +21,8 @@ export function searchAnimation() {
       toggle?.setAttribute("aria-expanded", "false");
     };
 
+    let wasDesktop = isDesktop();
+
     toggle?.addEventListener("click", (event) => {
       event.stopPropagation();
 
@@ -59,14 +61,17 @@ export function searchAnimation() {
     });
 
 
-    // when resizing if the search was opened we should immediately close it after only a limited space is left
     window.addEventListener("resize", () => {
-      if (isDesktop()) {
+      const desktop = isDesktop();
+
+      if (desktop) {
         searchContainer.classList.add("is-open");
         toggle?.setAttribute("aria-expanded", "true");
-      } else {
+      } else if (wasDesktop) {
         closeSearch();
       }
+
+      wasDesktop = desktop;
     });
   }
 }
