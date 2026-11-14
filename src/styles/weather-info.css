@@ -513,10 +513,6 @@
     font-size: 1.25rem;
   }
 
-  .search-container.is-open .search-input {
-    width: min(11rem, calc(100vw - 15rem));
-  }
-
   .daily-card {
     grid-template-columns: minmax(3.25rem, 0.8fr) minmax(4.5rem, 1.2fr) auto;
     gap: 0.5rem;

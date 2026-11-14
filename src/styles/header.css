@@ -213,6 +213,11 @@
     padding: 0.65rem 0.75rem;
   }
 
+  .search-container.is-open .search-input {
+    width: min(11rem, calc(100vw - 11rem));
+    padding: 0.2rem 0.7rem;
+  }
+
   .header-actions:has(.search-container.is-open) .temperature-unit {
     display: none;
   }
